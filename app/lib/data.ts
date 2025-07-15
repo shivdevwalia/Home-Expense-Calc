@@ -943,6 +943,92 @@ export async function getHouseHelpRolesForCurrentUser() {
   return roles;
 }
 
+// export async function checkAndInsertAlerts() {
+//   const supabase = await createClient();
+
+//   const {
+//     data: { user },
+//   } = await supabase.auth.getUser();
+//   if (!user) return;
+
+//   const userId = user.id;
+
+//   const now = new Date();
+//   const thisMonthStart = startOfMonth(now).toISOString();
+//   const thisMonthEnd = endOfMonth(now).toISOString();
+
+//   const lastMonthStart = startOfMonth(subMonths(now, 1)).toISOString();
+//   const lastMonthEnd = endOfMonth(subMonths(now, 1)).toISOString();
+
+//   // 🔸 Expenses
+//   const { data: currentMonth } = await supabase
+//     .from("expenses")
+//     .select("amount")
+//     .eq("user_id", userId)
+//     .gte("date", thisMonthStart)
+//     .lte("date", thisMonthEnd);
+
+//   const { data: lastMonth } = await supabase
+//     .from("expenses")
+//     .select("amount")
+//     .eq("user_id", userId)
+//     .gte("date", lastMonthStart)
+//     .lte("date", lastMonthEnd);
+
+//   const totalCurrent = currentMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
+//   const totalLast = lastMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
+
+//   const alertsToInsert: string[] = [];
+
+//   if (totalLast > 0 && totalCurrent > totalLast * 1.15) {
+//     alertsToInsert.push(
+//       " Your expenses this month are over 15% higher than last month."
+//     );
+//   }
+
+//   // 🔸 Absences
+//   const { data: absences } = await supabase
+//     .from("absences")
+//     .select("person_id, date")
+//     .eq("user_id", userId)
+//     .gte("date", thisMonthStart)
+//     .lte("date", thisMonthEnd);
+
+//   const absencesCount: Record<string, number> = {};
+//   absences?.forEach((a) => {
+//     absencesCount[a.person_id] = (absencesCount[a.person_id] || 0) + 1;
+//   });
+
+//   const { data: persons } = await supabase
+//     .from("person")
+//     .select("id, name")
+//     .eq("user_id", userId);
+
+//   persons?.forEach((p) => {
+//     if (absencesCount[p.id] > 2) {
+//       alertsToInsert.push(
+//         ` ${p.name} has been absent more than 2 days this month.`
+//       );
+//     }
+//   });
+
+//   for (const msg of alertsToInsert) {
+//     const { count } = await supabase
+//       .from("alerts")
+//       .select("*", { count: "exact", head: true })
+//       .eq("user_id", userId)
+//       .eq("message", msg);
+
+//     if (count === 0) {
+//       await supabase.from("alerts").insert({
+//         user_id: userId,
+//         message: msg,
+//         dismissed: false,
+//       });
+//     }
+//   }
+// }
+
 export async function checkAndInsertAlerts() {
   const supabase = await createClient();
 
@@ -1004,6 +1090,8 @@ export async function checkAndInsertAlerts() {
     .select("id, name")
     .eq("user_id", userId);
 
+  const personNames = new Set(persons?.map((p) => p.name) || []);
+
   persons?.forEach((p) => {
     if (absencesCount[p.id] > 2) {
       alertsToInsert.push(
@@ -1012,6 +1100,7 @@ export async function checkAndInsertAlerts() {
     }
   });
 
+  // 🔸 Insert new alerts if they don't exist
   for (const msg of alertsToInsert) {
     const { count } = await supabase
       .from("alerts")
@@ -1025,6 +1114,21 @@ export async function checkAndInsertAlerts() {
         message: msg,
         dismissed: false,
       });
+    }
+  }
+
+  // 🔸 Clean up alerts for deleted people
+  const { data: existingAlerts } = await supabase
+    .from("alerts")
+    .select("id, message")
+    .eq("user_id", userId);
+
+  for (const alert of existingAlerts || []) {
+    if (alert.message.includes("has been absent more than 2 days")) {
+      const name = alert.message.split(" has been absent")[0].trim();
+      if (!personNames.has(name)) {
+        await supabase.from("alerts").delete().eq("id", alert.id);
+      }
     }
   }
 }
