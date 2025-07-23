@@ -17,7 +17,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./lib/supabase/client";
 
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,7 +75,7 @@ export default function LoginPage() {
       bg="gray.50"
     >
       <Heading mb={8} color="gray.700" textAlign="center">
-        Expense Tracker
+        Home Expense Calculator
       </Heading>
 
       <Box
@@ -156,4 +155,3 @@ export default function LoginPage() {
     </Flex>
   );
 }
-

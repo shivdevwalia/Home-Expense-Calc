@@ -40,7 +40,7 @@ function Topbar() {
       position="sticky"
     >
       <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold">
-        Home Expense Tracker
+        Home Expense Calculator
       </Text>
 
       {/* This space is reserved for the mobile menu button */}
