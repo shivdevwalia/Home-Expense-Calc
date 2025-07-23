@@ -119,6 +119,7 @@ export default function OverviewPage() {
                     <Th isNumeric borderRight="1px solid #e2e8f0">
                       Total Salary
                     </Th>
+                    <Th isNumeric>Present Salary</Th>
                     <Th isNumeric borderRight="1px solid #e2e8f0">
                       Total Absences
                     </Th>
@@ -128,7 +129,6 @@ export default function OverviewPage() {
                     <Th isNumeric borderRight="1px solid #e2e8f0">
                       Advances
                     </Th>
-                    <Th isNumeric>Present Salary</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -156,6 +156,7 @@ export default function OverviewPage() {
                       <Td isNumeric borderRight="1px solid #edf2f7">
                         ₹{person.salary}
                       </Td>
+                      <Td isNumeric>₹{person.presentSalary}</Td>
                       <Td isNumeric borderRight="1px solid #edf2f7">
                         {person.totalAbsences}
                       </Td>
@@ -165,7 +166,6 @@ export default function OverviewPage() {
                       <Td isNumeric borderRight="1px solid #edf2f7">
                         ₹{person.advances}
                       </Td>
-                      <Td isNumeric>₹{person.presentSalary}</Td>
                     </Tr>
                   ))}
                 </Tbody>

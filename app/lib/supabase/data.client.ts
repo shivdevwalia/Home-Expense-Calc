@@ -2081,10 +2081,30 @@ export async function getAbsencesPerPersonPerMonth(subcategoryName: string) {
     }
   > = {};
 
+  // for (const identityId of personIdentityIds) {
+  //   result[identityId] = {
+  //     name: identityIdToName[identityId] || "Unknown",
+  //     monthly: {},
+  //   };
+  // }
+
+  const current = new Date();
+
   for (const identityId of personIdentityIds) {
+    const monthly: Record<string, number> = {};
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(current);
+      date.setMonth(current.getMonth() - i);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}`;
+      monthly[key] = 0; // initialize to zero absences for all last 6 months
+    }
+
     result[identityId] = {
       name: identityIdToName[identityId] || "Unknown",
-      monthly: {},
+      monthly,
     };
   }
 
@@ -3695,8 +3715,6 @@ export async function getCurrentMonthExpense() {
 //   return roles;
 // }
 
-
-
 export async function getHouseHelpRolesForCurrentUser() {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
@@ -3803,7 +3821,9 @@ export async function getMonthlyDataForPersonIdentity(
   }
 
   return Array.from(monthMap.entries()).map(([month, total]) => ({
-    label: new Date(2025, month - 1).toLocaleString("default", { month: "short" }),
+    label: new Date(2025, month - 1).toLocaleString("default", {
+      month: "short",
+    }),
     value: total,
   }));
 }
