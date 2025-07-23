@@ -50,7 +50,6 @@ export default function UserExpenses({
 
       <VStack align="stretch" spacing={4}>
         {categoryExpenses.map(({ category, amount }) => {
-          // Combine entries from both maps if category is "Household Help"
           let subs: {
             id: string;
             subcategory: string;
@@ -58,21 +57,12 @@ export default function UserExpenses({
           }[] = [];
 
           if (category === "Household Help") {
-            const expenseSubs = expenseSubcategoryMap[category] || [];
             const personSubs = personSubcategoryMap[category] || [];
 
-            // Get all role names from person entries (e.g., "Driver", "Maid")
-            const personRoles = new Set(
-              personSubs.map((p) => p.subcategory.split(" - ")[0])
-            );
-
-            // Filter out matching roles from expense-based subs
-            const filteredExpenseSubs = expenseSubs.filter(
-              (e) => !personRoles.has(e.subcategory)
-            );
-
-            subs = [...filteredExpenseSubs, ...personSubs];
+            // ✅ Only include well-formed "Role - Name" labels
+            subs = personSubs.filter((p) => p.subcategory.includes(" - "));
           } else {
+            // All other categories (like Utilities)
             subs = expenseSubcategoryMap[category] || [];
           }
 

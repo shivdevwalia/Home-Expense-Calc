@@ -10,107 +10,65 @@ import { createClient } from "./supabase/server";
 //   } = await supabase.auth.getUser();
 
 //   if (userError || !user) return 0;
-//   5;
-//   const threeMonthsAgo = startOfMonth(subMonths(new Date(), 3)).toISOString();
 
-//   const { data, error } = await supabase
+//   const startDate = startOfMonth(subMonths(new Date(), 3)).toISOString();
+
+//   // Fetch normal expenses
+//   const { data: expenses, error: expenseError } = await supabase
 //     .from("expenses")
 //     .select("amount, date")
-//     .gte("date", threeMonthsAgo)
+//     .gte("date", startDate)
 //     .eq("user_id", user.id);
 
-//   if (error || !data) {
-//     console.error("Error fetching expenses:", error);
+//   if (expenseError) {
+//     console.error("Error fetching expenses:", expenseError);
 //     return 0;
 //   }
 
-//   // Group by month
+//   // Fetch Household Help (person table) entries created in the last 3 months
+//   const { data: people, error: personError } = await supabase
+//     .from("person")
+//     .select("salary, created_at")
+//     .gte("created_at", startDate)
+//     .eq("user_id", user.id);
+
+//   if (personError) {
+//     console.error("Error fetching person salaries:", personError);
+//     return 0;
+//   }
+
+//   // Group both types by month
 //   const monthlyTotals = new Map<string, number>();
 
-//   for (const expense of data) {
-//     const month = new Date(expense.date).toISOString().slice(0, 7); // "2025-07"
-//     monthlyTotals.set(month, (monthlyTotals.get(month) || 0) + expense.amount);
+//   // Group expenses
+//   for (const expense of expenses || []) {
+//     const month = new Date(expense.date).toISOString().slice(0, 7);
+//     monthlyTotals.set(
+//       month,
+//       (monthlyTotals.get(month) || 0) + (expense.amount || 0)
+//     );
 //   }
+
+//   // Group person salaries
+//   for (const person of people || []) {
+//     const month = new Date(person.created_at).toISOString().slice(0, 7);
+//     monthlyTotals.set(
+//       month,
+//       (monthlyTotals.get(month) || 0) + (person.salary || 0)
+//     );
+//   }
+
 //   const monthsWithData = monthlyTotals.size;
 //   if (monthsWithData === 0) return 0;
 
-//   const totalSpent = Array.from(monthlyTotals.values()).reduce(
+//   const total = Array.from(monthlyTotals.values()).reduce(
 //     (acc, val) => acc + val,
 //     0
 //   );
-//   const avg = totalSpent / monthsWithData;
-
-//   return Math.round(avg);
+//   return Math.round(total / monthsWithData);
 // }
 
-export async function getAverageMonthlyExpense() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) return 0;
-
-  const startDate = startOfMonth(subMonths(new Date(), 3)).toISOString();
-
-  // Fetch normal expenses
-  const { data: expenses, error: expenseError } = await supabase
-    .from("expenses")
-    .select("amount, date")
-    .gte("date", startDate)
-    .eq("user_id", user.id);
-
-  if (expenseError) {
-    console.error("Error fetching expenses:", expenseError);
-    return 0;
-  }
-
-  // Fetch Household Help (person table) entries created in the last 3 months
-  const { data: people, error: personError } = await supabase
-    .from("person")
-    .select("salary, created_at")
-    .gte("created_at", startDate)
-    .eq("user_id", user.id);
-
-  if (personError) {
-    console.error("Error fetching person salaries:", personError);
-    return 0;
-  }
-
-  // Group both types by month
-  const monthlyTotals = new Map<string, number>();
-
-  // Group expenses
-  for (const expense of expenses || []) {
-    const month = new Date(expense.date).toISOString().slice(0, 7);
-    monthlyTotals.set(
-      month,
-      (monthlyTotals.get(month) || 0) + (expense.amount || 0)
-    );
-  }
-
-  // Group person salaries
-  for (const person of people || []) {
-    const month = new Date(person.created_at).toISOString().slice(0, 7);
-    monthlyTotals.set(
-      month,
-      (monthlyTotals.get(month) || 0) + (person.salary || 0)
-    );
-  }
-
-  const monthsWithData = monthlyTotals.size;
-  if (monthsWithData === 0) return 0;
-
-  const total = Array.from(monthlyTotals.values()).reduce(
-    (acc, val) => acc + val,
-    0
-  );
-  return Math.round(total / monthsWithData);
-}
-
-// export async function getCurrentMonthExpense() {
+// export async function getAverageMonthlyExpense(): Promise<number> {
 //   const supabase = await createClient();
 
 //   const {
@@ -120,24 +78,310 @@ export async function getAverageMonthlyExpense() {
 
 //   if (userError || !user) return 0;
 
-//   const start = startOfMonth(new Date()).toISOString();
-//   const end = endOfMonth(new Date()).toISOString();
+//   const today = new Date();
+//   const threeMonthsAgo = startOfMonth(subMonths(today, 2)); // current + 2 back
 
-//   const { data, error } = await supabase
+//   /* ---------- 1. Pull data ---------- */
+
+//   // Normal expenses for the window
+//   const { data: expenses, error: expenseError } = await supabase
 //     .from("expenses")
-//     .select("amount")
-//     .gte("date", start)
-//     .lte("date", end)
+//     .select("amount, date")
+//     .gte("date", threeMonthsAgo.toISOString())
 //     .eq("user_id", user.id);
 
-//   if (error || !data) {
-//     console.error("Error fetching current month expenses:", error);
+//   if (expenseError) {
+//     console.error("Error fetching expenses:", expenseError);
 //     return 0;
 //   }
 
-//   const total = data.reduce((sum, row) => sum + row.amount, 0);
-//   return Math.round(total);
+//   // All people (need end_date to see when they left)
+//   const { data: people, error: personError } = await supabase
+//     .from("person")
+//     .select("salary, created_at, end_date")
+//     .eq("user_id", user.id);
+
+//   if (personError) {
+//     console.error("Error fetching person salaries:", personError);
+//     return 0;
+//   }
+
+//   /* ---------- 2. Build a map YYYY‑MM → total ---------- */
+
+//   const monthlyTotals = new Map<string, number>();
+
+//   // (a) Add normal expenses month‑by‑month
+//   for (const exp of expenses || []) {
+//     const key = new Date(exp.date).toISOString().slice(0, 7); // "YYYY-MM"
+//     monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (exp.amount || 0));
+//   }
+
+//   // (b) Add salaries for months in which the person was active
+//   for (let i = 0; i < 3; i++) {
+//     const monthStart = startOfMonth(subMonths(today, 2 - i));
+//     const monthEnd = endOfMonth(monthStart);
+//     const key = monthStart.toISOString().slice(0, 7);
+
+//     for (const person of people || []) {
+//       const createdAt = new Date(person.created_at);
+//       const exitDate = person.end_date
+//         ? new Date(person.end_date)
+//         : new Date("9999-12-31");
+
+//       const wasActive = createdAt <= monthEnd && exitDate >= monthStart; // active any day that month
+
+//       if (wasActive) {
+//         monthlyTotals.set(
+//           key,
+//           (monthlyTotals.get(key) || 0) + (person.salary || 0)
+//         );
+//       }
+//     }
+//   }
+
+//   /* ---------- 3. Average over months that actually have data ---------- */
+
+//   const totalsWithData = Array.from(monthlyTotals.values()).filter(
+//     (val) => val > 0
+//   );
+//   if (totalsWithData.length === 0) return 0;
+
+//   const totalSum = totalsWithData.reduce((acc, v) => acc + v, 0);
+//   return Math.round(totalSum / totalsWithData.length);
 // }
+
+// export async function getAverageMonthlyExpense() {
+//   const supabase = await createClient();
+//   const {
+//     data: { user },
+//     error: userError,
+//   } = await supabase.auth.getUser();
+
+//   if (userError || !user) return 0;
+
+//   const today = new Date();
+
+//   // Prepare a map to hold totals per month (yyyy-mm => total)
+//   const monthlyTotals = new Map<string, number>();
+
+//   // Fetch all normal expenses for the last 3 months
+//   const startDate = startOfMonth(subMonths(today, 2)).toISOString();
+//   const { data: expenses, error: expenseError } = await supabase
+//     .from("expenses")
+//     .select("amount, date")
+//     .eq("user_id", user.id)
+//     .gte("date", startDate);
+
+//   if (expenseError) {
+//     console.error("Error fetching expenses:", expenseError);
+//     return 0;
+//   }
+
+//   for (const exp of expenses || []) {
+//     const date = new Date(exp.date);
+//     const month = date.getMonth() + 1;
+//     const year = date.getFullYear();
+//     const key = `${year}-${String(month).padStart(2, "0")}`;
+
+//     monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (exp.amount || 0));
+//   }
+
+//   // Fetch all person salaries for the last 3 months
+//   const salaryMonths = [...Array(3)].map((_, i) => {
+//     const d = subMonths(today, 2 - i);
+//     return { month: d.getMonth() + 1, year: d.getFullYear() };
+//   });
+
+//   const { data: people, error: peopleError } = await supabase
+//     .from("person")
+//     .select("salary, month, year")
+//     .eq("user_id", user.id)
+//     .in(
+//       "month",
+//       salaryMonths.map((m) => m.month)
+//     )
+//     .in(
+//       "year",
+//       salaryMonths.map((m) => m.year)
+//     );
+
+//   if (peopleError) {
+//     console.error("Error fetching person data:", peopleError);
+//     return 0;
+//   }
+
+//   for (let { month, year, salary } of people || []) {
+//     const key = `${year}-${String(month).padStart(2, "0")}`;
+//     monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (salary || 0));
+//   }
+
+//   // Final step: calculate average
+//   const values = Array.from(monthlyTotals.values());
+//   const total = values.reduce((sum, val) => sum + val, 0);
+//   const average = values.length ? total / values.length : 0;
+
+//   return Math.round(average);
+// }
+
+// export async function getAverageMonthlyExpense() {
+//   const supabase = await createClient();
+//   const {
+//     data: { user },
+//     error: userError,
+//   } = await supabase.auth.getUser();
+
+//   if (userError || !user) return 0;
+
+//   const today = new Date();
+
+//   // Get last 3 months as array of { month, year }
+//   const last3Months = [...Array(3)].map((_, i) => {
+//     const d = subMonths(today, 2 - i);
+//     return { month: d.getMonth() + 1, year: d.getFullYear() };
+//   });
+
+//   // Build a Set of keys like '2025-07'
+//   const monthKeys = last3Months.map(({ month, year }) => `${year}-${String(month).padStart(2, '0')}`);
+
+//   const monthlyTotals = new Map<string, number>();
+
+//   // Fetch expenses grouped by month and year
+//   const { data: expenses, error: expenseError } = await supabase
+//     .from("expenses")
+//     .select("amount, month, year")
+//     .eq("user_id", user.id)
+//     .in("month", last3Months.map((m) => m.month))
+//     .in("year", last3Months.map((m) => m.year));
+
+//   if (expenseError) {
+//     console.error("Error fetching expenses:", expenseError);
+//     return 0;
+//   }
+
+//   for (const exp of expenses || []) {
+//     const key = `${exp.year}-${String(exp.month).padStart(2, '0')}`;
+//     monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (exp.amount || 0));
+//   }
+
+//   // Fetch person salaries for these months
+//   const { data: people, error: peopleError } = await supabase
+//     .from("person")
+//     .select("salary, month, year")
+//     .eq("user_id", user.id)
+//     .in("month", last3Months.map((m) => m.month))
+//     .in("year", last3Months.map((m) => m.year));
+
+//   if (peopleError) {
+//     console.error("Error fetching person data:", peopleError);
+//     return 0;
+//   }
+
+//   for (const p of people || []) {
+//     const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+//     monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (p.salary || 0));
+//   }
+
+//   // Calculate average
+//   const values = last3Months.map(({ month, year }) => {
+//     const key = `${year}-${String(month).padStart(2, '0')}`;
+//     return monthlyTotals.get(key) || 0;
+//   });
+
+//   const total = values.reduce((sum, val) => sum + val, 0);
+//   const average = total / values.length;
+
+//   return Math.round(average);
+// }
+
+export async function getAverageMonthlyExpense() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError || !user) return 0;
+
+  const today = new Date();
+  // Get the target 3 months (current month and 2 previous months)
+  const targetMonths = [...Array(3)].map((_, i) => {
+    const date = subMonths(today, 2 - i);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return { month, year, key: `${year}-${String(month).padStart(2, "0")}` };
+  });
+
+  // Prepare a map to hold totals per month (yyyy-mm => total)
+  const monthlyTotals = new Map<string, number>();
+
+  // Fetch expenses for the target months only
+  const { data: expenses, error: expenseError } = await supabase
+    .from("expenses")
+    .select("amount, month, year")
+    .eq("user_id", user.id)
+    .in(
+      "month",
+      targetMonths.map((m) => m.month)
+    )
+    .in(
+      "year",
+      targetMonths.map((m) => m.year)
+    );
+
+  if (expenseError) {
+    console.error("Error fetching expenses:", expenseError);
+    return 0;
+  }
+
+  // Process expenses by month/year labels
+  for (const exp of expenses || []) {
+    const key = `${exp.year}-${String(exp.month).padStart(2, "0")}`;
+    // Only include if it's one of our target months
+    if (targetMonths.some((tm) => tm.key === key)) {
+      monthlyTotals.set(key, (monthlyTotals.get(key) || 0) + (exp.amount || 0));
+    }
+  }
+
+  // Fetch person salaries for the target months only (regardless of is_active)
+  const { data: people, error: peopleError } = await supabase
+    .from("person")
+    .select("salary, month, year")
+    .eq("user_id", user.id)
+    .in(
+      "month",
+      targetMonths.map((m) => m.month)
+    )
+    .in(
+      "year",
+      targetMonths.map((m) => m.year)
+    );
+
+  if (peopleError) {
+    console.error("Error fetching person data:", peopleError);
+    return 0;
+  }
+
+  // Process person salaries by month/year labels
+  for (const person of people || []) {
+    const key = `${person.year}-${String(person.month).padStart(2, "0")}`;
+    // Only include if it's one of our target months
+    if (targetMonths.some((tm) => tm.key === key)) {
+      monthlyTotals.set(
+        key,
+        (monthlyTotals.get(key) || 0) + (person.salary || 0)
+      );
+    }
+  }
+
+  // Calculate average only from months that have data (don't include months with 0 data)
+  const values = Array.from(monthlyTotals.values());
+  const total = values.reduce((sum, val) => sum + val, 0);
+  console.log("total", total);
+  console.log("valueslength", values.length);
+  const average = values.length ? total / values.length : 0;
+  console.log("average", average);
+
+  return Math.floor(average);
+}
 
 export async function getCurrentMonthExpense() {
   const supabase = await createClient();
@@ -149,15 +393,20 @@ export async function getCurrentMonthExpense() {
 
   if (userError || !user) return 0;
 
+  const now = new Date();
+  const thisMonth = now.getMonth() + 1;
+  const thisYear = now.getFullYear();
+
   const start = startOfMonth(new Date()).toISOString();
   const end = endOfMonth(new Date()).toISOString();
 
   // 1. Fetch normal expenses
   const { data: expenses, error: expenseError } = await supabase
     .from("expenses")
-    .select("amount")
-    .gte("date", start)
-    .lte("date", end)
+    .select("amount,user_id,date,month,year")
+
+    .eq("month", thisMonth)
+    .eq("year", thisYear)
     .eq("user_id", user.id);
 
   if (expenseError) {
@@ -168,13 +417,14 @@ export async function getCurrentMonthExpense() {
   const normalTotal =
     expenses?.reduce((sum, row) => sum + (row.amount || 0), 0) || 0;
 
-  // 2. Fetch Household Help (person table)
+  // 2. Fetch Household Help salaries (active + created this month)
   const { data: people, error: personError } = await supabase
     .from("person")
-    .select("salary, created_at")
+    .select("salary, created_at, is_active,month,year")
     .eq("user_id", user.id)
-    .gte("created_at", start)
-    .lte("created_at", end);
+    .eq("month", thisMonth)
+    .eq("year", thisYear)
+    .eq("is_active", true);
 
   if (personError) {
     console.error("Error fetching person salaries:", personError);
@@ -196,29 +446,82 @@ export async function getCurrentMonthExpense() {
 
 //   if (userError || !user) return [];
 
-//   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5)).toISOString();
-
-//   const { data, error } = await supabase
-//     .from("expenses")
-//     .select("amount, date")
-//     .gte("date", sixMonthsAgo)
-//     .eq("user_id", user.id);
-
-//   if (error || !data) return [];
-
-//   // Group by month
+//   const today = new Date();
 //   const grouped = new Map<string, number>();
 
-//   for (const exp of data) {
-//     const date = new Date(exp.date);
-//     const label = date.toLocaleString("en-US", { month: "short" }); // Jan, Feb...
-//     grouped.set(label, (grouped.get(label) || 0) + exp.amount);
+//   // Prepare last 6 months
+//   const monthLabels = [...Array(6)].map((_, i) => {
+//     const date = subMonths(today, 5 - i);
+//     const label = date.toLocaleString("en-US", {
+//       month: "short",
+//       year: "numeric",
+//     });
+//     return { date, label };
+//   });
+
+//   // 1. Get ALL normal expenses (no date filter since they're recurring)
+//   const { data: expenseData, error: expenseError } = await supabase
+//     .from("expenses")
+//     .select("amount, date")
+//     .eq("user_id", user.id);
+
+//   if (expenseError) {
+//     console.error("Expense error", expenseError);
+//     return [];
 //   }
 
-//   return Array.from(grouped.entries()).map(([label, value]) => ({
-//     label,
-//     value,
-//   }));
+//   // For each month, add expenses that were created on or before that month
+//   for (const { date, label } of monthLabels) {
+//     const monthEnd = endOfMonth(date);
+
+//     // Add recurring expenses that existed by this month
+//     for (const exp of expenseData || []) {
+//       const expenseDate = new Date(exp.date);
+//       // Include expense if it was created on or before this month
+//       if (
+//         expenseDate.getMonth() === date.getMonth() &&
+//         expenseDate.getFullYear() === date.getFullYear()
+//       ) {
+//         grouped.set(label, (grouped.get(label) || 0) + (exp.amount || 0));
+//       }
+//     }
+//   }
+
+//   // 2. Add salaries for each month the person is active
+//   for (const { date, label } of monthLabels) {
+//     const monthEnd = endOfMonth(date);
+
+//     const { data: peopleData, error: peopleError } = await supabase
+//       .from("person")
+//       .select("salary, created_at, end_date")
+//       .lte("created_at", monthEnd.toISOString())
+//       .or(`end_date.gte.${monthEnd.toISOString()},end_date.is.null`)
+//       .eq("user_id", user.id);
+
+//     if (peopleError) {
+//       console.error("People error", peopleError);
+//       continue;
+//     }
+
+//     // Add salary for this month if person is active
+//     for (const person of peopleData || []) {
+//       const createdAt = new Date(person.created_at);
+//       const monthStart = startOfMonth(date);
+//       const personEnd = person.end_date ? new Date(person.end_date) : null;
+
+//       // Check if person is active during this month
+//       const isActiveThisMonth =
+//         createdAt <= monthEnd && (!personEnd || personEnd >= monthStart);
+
+//       if (isActiveThisMonth) {
+//         grouped.set(label, (grouped.get(label) || 0) + (person.salary || 0));
+//       }
+//     }
+//   }
+
+//   return Array.from(grouped.entries())
+//     .sort((a, b) => Date.parse(`01 ${a[0]}`) - Date.parse(`01 ${b[0]}`))
+//     .map(([label, value]) => ({ label, value: Math.round(value) }));
 // }
 
 export async function getLastSixMonthsExpenses() {
@@ -230,54 +533,62 @@ export async function getLastSixMonthsExpenses() {
 
   if (userError || !user) return [];
 
-  const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5)).toISOString();
-
-  // 1. Fetch normal expenses
-  const { data: expenseData, error: expenseError } = await supabase
-    .from("expenses")
-    .select("amount, date")
-    .gte("date", sixMonthsAgo)
-    .eq("user_id", user.id);
-
-  if (expenseError) {
-    console.error("Expense error", expenseError);
-    return [];
-  }
-
-  // 2. Fetch people (household help) data
-  const { data: peopleData, error: peopleError } = await supabase
-    .from("person")
-    .select("salary, created_at");
-
-  if (peopleError) {
-    console.error("People error", peopleError);
-    return [];
-  }
-
-  // 3. Combine both and group by month
-  const grouped = new Map<string, number>();
-
-  for (const exp of expenseData || []) {
-    const date = new Date(exp.date);
-    const label = date.toLocaleString("en-US", {
-      month: "short",
-      year: "numeric",
-    }); // e.g. Jul 2025
-    grouped.set(label, (grouped.get(label) || 0) + exp.amount);
-  }
-
-  for (const person of peopleData || []) {
-    const date = new Date(person.created_at);
+  const today = new Date();
+  const monthYearList = [...Array(6)].map((_, i) => {
+    const date = subMonths(today, 5 - i);
     const label = date.toLocaleString("en-US", {
       month: "short",
       year: "numeric",
     });
-    grouped.set(label, (grouped.get(label) || 0) + person.salary);
+    return {
+      label,
+      month: date.getMonth() + 1,
+      year: date.getFullYear(),
+    };
+  });
+
+  const results = [];
+
+  for (const { label, month, year } of monthYearList) {
+    let total = 0;
+
+    // 1. Get expenses for this month
+    const { data: expenseData, error: expenseError } = await supabase
+      .from("expenses")
+      .select("amount,month,year")
+      .eq("user_id", user.id)
+      .eq("month", month)
+      .eq("year", year);
+
+    if (expenseError) {
+      console.error("Expense error", expenseError);
+    } else {
+      for (const exp of expenseData || []) {
+        total += exp.amount || 0;
+      }
+    }
+
+    // 2. Get salaries for this month
+    const { data: peopleData, error: peopleError } = await supabase
+      .from("person")
+      .select("salary,month,year,is_active")
+      .eq("user_id", user.id)
+      .eq("month", month)
+      .eq("is_active", true)
+      .eq("year", year);
+
+    if (peopleError) {
+      console.error("Person error", peopleError);
+    } else {
+      for (const person of peopleData || []) {
+        total += person.salary || 0;
+      }
+    }
+
+    results.push({ label, value: Math.round(total) });
   }
 
-  return Array.from(grouped.entries())
-    .sort((a, b) => Date.parse(`01 ${a[0]}`) - Date.parse(`01 ${b[0]}`)) // optional: sort months
-    .map(([label, value]) => ({ label, value }));
+  return results;
 }
 
 export async function getCategories() {
@@ -446,75 +757,6 @@ export async function getUserExpensesGrouped() {
   return data;
 }
 
-// export async function getMonthlyExpenseByCategory() {
-//   const supabase = await createClient();
-
-//   const {
-//     data: { user },
-//     error: userError,
-//   } = await supabase.auth.getUser();
-
-//   if (userError || !user) {
-//     console.error("User not found");
-//     return [];
-//   }
-
-//   const start = startOfMonth(new Date()).toISOString();
-//   const end = endOfMonth(new Date()).toISOString();
-
-//   const { data, error } = await supabase
-//     .from("expenses")
-//     .select(
-//       `
-//       amount,
-//       subcategories (
-//         id,
-//         categories (
-//           name
-//         )
-//       )
-//     `
-//     )
-//     .eq("user_id", user.id)
-//     .gte("date", start)
-//     .lte("date", end)
-//     .gt("amount", 0);
-
-//   if (error || !data) {
-//     console.error("Error fetching expenses:", error);
-//     return [];
-//   }
-
-//   const categoryTotals = new Map<string, number>();
-
-//   for (const exp of data) {
-//     const subcategories = Array.isArray(exp.subcategories)
-//       ? exp.subcategories
-//       : [exp.subcategories];
-
-//     for (const subcat of subcategories) {
-//       const categories = Array.isArray(subcat?.categories)
-//         ? subcat.categories
-//         : [subcat.categories];
-
-//       for (const cat of categories) {
-//         const categoryName = cat?.name;
-//         if (!categoryName || typeof exp.amount !== "number") continue;
-
-//         categoryTotals.set(
-//           categoryName,
-//           (categoryTotals.get(categoryName) || 0) + exp.amount
-//         );
-//       }
-//     }
-//   }
-
-//   return Array.from(categoryTotals.entries()).map(([category, amount]) => ({
-//     category,
-//     amount,
-//   }));
-// }
-
 export async function getMonthlyExpenseByCategory() {
   const supabase = await createClient();
 
@@ -528,6 +770,10 @@ export async function getMonthlyExpenseByCategory() {
     return [];
   }
 
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // JS months are 0-based
+  const currentYear = now.getFullYear();
+
   const start = startOfMonth(new Date()).toISOString();
   const end = endOfMonth(new Date()).toISOString();
 
@@ -536,6 +782,10 @@ export async function getMonthlyExpenseByCategory() {
     .from("expenses")
     .select(
       `
+      month,
+      year,
+      date,
+      user_id,
       amount,
       subcategories (
         id,
@@ -546,8 +796,9 @@ export async function getMonthlyExpenseByCategory() {
     `
     )
     .eq("user_id", user.id)
-    .gte("date", start)
-    .lte("date", end)
+
+    .eq("month", currentMonth)
+    .eq("year", currentYear)
     .gt("amount", 0);
 
   if (expenseError || !expenseData) {
@@ -581,15 +832,24 @@ export async function getMonthlyExpenseByCategory() {
   }
 
   // 3. Fetch household help salaries from `person` table
-  const { data: personData, error: personError } = await supabase.from("person")
-    .select(`
+  const { data: personData, error: personError } = await supabase
+    .from("person")
+    .select(
+      `
+      month,
+      year,
+      is_active,
       salary,
       subcategories (
         categories (
           name
         )
       )
-    `);
+    `
+    )
+    .eq("month", currentMonth)
+    .eq("year", currentYear)
+    .eq("is_active", true);
 
   if (personError) {
     console.error("Error fetching person data:", personError);
@@ -629,79 +889,6 @@ export async function getMonthlyExpenseByCategory() {
   }));
 }
 
-// export async function getMonthlySubcategoriesGroupedByCategory() {
-//   const supabase = await createClient();
-
-//   const {
-//     data: { user },
-//     error: userError,
-//   } = await supabase.auth.getUser();
-
-//   if (userError || !user) {
-//     console.error("User not found");
-//     return {};
-//   }
-
-//   const start = startOfMonth(new Date()).toISOString();
-//   const end = endOfMonth(new Date()).toISOString();
-
-//   const { data, error } = await supabase
-//     .from("expenses")
-//     .select(
-//       `
-//       amount,
-//       subcategories (
-//         name,
-//         categories (
-//           name
-//         )
-//       )
-//     `
-//     )
-//     .eq("user_id", user.id)
-//     .gte("date", start)
-//     .lte("date", end)
-//     .gt("amount", 0);
-
-//   if (error || !data) {
-//     console.error("Error fetching subcategories:", error);
-//     return {};
-//   }
-
-//   const map: Record<string, { subcategory: string; amount: number }[]> = {};
-
-//   for (const exp of data) {
-//     const subcats = Array.isArray(exp.subcategories)
-//       ? exp.subcategories
-//       : [exp.subcategories];
-
-//     for (const subcat of subcats) {
-//       const subcatName = subcat?.name;
-
-//       const categories = Array.isArray(subcat?.categories)
-//         ? subcat.categories
-//         : [subcat.categories];
-
-//       const catName = categories?.[0]?.name;
-
-//       if (!subcatName || !catName || typeof exp.amount !== "number") continue;
-
-//       if (!map[catName]) {
-//         map[catName] = [];
-//       }
-
-//       const existing = map[catName].find((s) => s.subcategory === subcatName);
-//       if (existing) {
-//         existing.amount += exp.amount;
-//       } else {
-//         map[catName].push({ subcategory: subcatName, amount: exp.amount });
-//       }
-//     }
-//   }
-
-//   return map;
-// }
-
 export async function getMonthlySubcategoriesGroupedByCategory() {
   const supabase = await createClient();
 
@@ -715,6 +902,9 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
     return {};
   }
 
+  const now = new Date();
+  const thisMonth = now.getMonth() + 1;
+  const thisYear = now.getFullYear();
   const start = startOfMonth(new Date()).toISOString();
   const end = endOfMonth(new Date()).toISOString();
 
@@ -722,6 +912,9 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
     .from("expenses")
     .select(
       `
+      date,
+      month,
+      year,
       amount,
       subcategories (
         name,
@@ -732,8 +925,8 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
     `
     )
     .eq("user_id", user.id)
-    .gte("date", start)
-    .lte("date", end)
+    .eq("month", thisMonth)
+    .eq("year", thisYear)
     .gt("amount", 0);
 
   if (error || !data) {
@@ -778,6 +971,9 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
     .from("person")
     .select(
       `
+      is_active,
+      month,
+      year,
       salary,
       subcategories (
         name,
@@ -788,7 +984,9 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
     `
     )
     .eq("user_id", user.id)
-    .gte("created_at", start)
+    .eq("is_active", true)
+    .eq("month", thisMonth)
+    .eq("year", thisYear)
     .lte("created_at", end);
 
   if (personError) {
@@ -829,67 +1027,12 @@ export async function getMonthlySubcategoriesGroupedByCategory() {
   return map;
 }
 
-// export async function getHouseHelpRolesForCurrentUser() {
-//   const supabase = await createClient();
-
-//   const {
-//     data: { user },
-//     error: userError,
-//   } = await supabase.auth.getUser();
-
-//   if (userError || !user) return [];
-
-//   const start = startOfMonth(new Date()).toISOString();
-//   const end = endOfMonth(new Date()).toISOString();
-
-//   const { data, error } = await supabase
-//     .from("expenses")
-//     .select(
-//       `
-//       subcategories (
-//         id,
-//         name,
-//         categories (
-//           name
-//         )
-//       )
-//     `
-//     )
-//     .eq("user_id", user.id)
-//     .gte("date", start)
-//     .lte("date", end)
-//     .gt("amount", 0);
-
-//   if (error || !data) {
-//     console.error("Error fetching house help roles:", error);
-//     return [];
-//   }
-
-//   const seen = new Set();
-//   const roles: { id: string; name: string }[] = [];
-
-//   for (const exp of data) {
-//     const subcat = Array.isArray(exp.subcategories)
-//       ? exp.subcategories[0]
-//       : exp.subcategories;
-
-//     const cat = Array.isArray(subcat?.categories)
-//       ? subcat.categories[0]
-//       : subcat?.categories;
-
-//     if (cat?.name !== "Household Help") continue;
-
-//     if (!seen.has(subcat.id)) {
-//       seen.add(subcat.id);
-//       roles.push({ id: subcat.id, name: subcat.name });
-//     }
-//   }
-
-//   return roles;
-// }
-
 export async function getHouseHelpRolesForCurrentUser() {
   const supabase = await createClient();
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // JS months are 0-based
+  const currentYear = now.getFullYear();
 
   const {
     data: { user },
@@ -902,6 +1045,9 @@ export async function getHouseHelpRolesForCurrentUser() {
     .from("person")
     .select(
       `
+      month,
+      year,
+      is_active,
       id,
       name,
       subcategories (
@@ -913,6 +1059,9 @@ export async function getHouseHelpRolesForCurrentUser() {
       )
     `
     )
+    .eq("month", currentMonth)
+    .eq("year", currentYear)
+    .eq("is_active", true)
     .eq("user_id", user.id);
 
   if (error || !data) {
@@ -943,91 +1092,24 @@ export async function getHouseHelpRolesForCurrentUser() {
   return roles;
 }
 
-// export async function checkAndInsertAlerts() {
-//   const supabase = await createClient();
+async function getLast3MonthsRangesIncludingCurrent() {
+  const supabase = await createClient();
+  const result = [];
 
-//   const {
-//     data: { user },
-//   } = await supabase.auth.getUser();
-//   if (!user) return;
+  for (let i = 2; i >= 0; i--) {
+    const monthDate = subMonths(new Date(), i);
+    const start = startOfMonth(monthDate);
+    const end = endOfMonth(monthDate);
 
-//   const userId = user.id;
+    result.push({
+      month: monthDate.toISOString().slice(0, 7), // "YYYY-MM"
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    });
+  }
 
-//   const now = new Date();
-//   const thisMonthStart = startOfMonth(now).toISOString();
-//   const thisMonthEnd = endOfMonth(now).toISOString();
-
-//   const lastMonthStart = startOfMonth(subMonths(now, 1)).toISOString();
-//   const lastMonthEnd = endOfMonth(subMonths(now, 1)).toISOString();
-
-//   // 🔸 Expenses
-//   const { data: currentMonth } = await supabase
-//     .from("expenses")
-//     .select("amount")
-//     .eq("user_id", userId)
-//     .gte("date", thisMonthStart)
-//     .lte("date", thisMonthEnd);
-
-//   const { data: lastMonth } = await supabase
-//     .from("expenses")
-//     .select("amount")
-//     .eq("user_id", userId)
-//     .gte("date", lastMonthStart)
-//     .lte("date", lastMonthEnd);
-
-//   const totalCurrent = currentMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
-//   const totalLast = lastMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
-
-//   const alertsToInsert: string[] = [];
-
-//   if (totalLast > 0 && totalCurrent > totalLast * 1.15) {
-//     alertsToInsert.push(
-//       " Your expenses this month are over 15% higher than last month."
-//     );
-//   }
-
-//   // 🔸 Absences
-//   const { data: absences } = await supabase
-//     .from("absences")
-//     .select("person_id, date")
-//     .eq("user_id", userId)
-//     .gte("date", thisMonthStart)
-//     .lte("date", thisMonthEnd);
-
-//   const absencesCount: Record<string, number> = {};
-//   absences?.forEach((a) => {
-//     absencesCount[a.person_id] = (absencesCount[a.person_id] || 0) + 1;
-//   });
-
-//   const { data: persons } = await supabase
-//     .from("person")
-//     .select("id, name")
-//     .eq("user_id", userId);
-
-//   persons?.forEach((p) => {
-//     if (absencesCount[p.id] > 2) {
-//       alertsToInsert.push(
-//         ` ${p.name} has been absent more than 2 days this month.`
-//       );
-//     }
-//   });
-
-//   for (const msg of alertsToInsert) {
-//     const { count } = await supabase
-//       .from("alerts")
-//       .select("*", { count: "exact", head: true })
-//       .eq("user_id", userId)
-//       .eq("message", msg);
-
-//     if (count === 0) {
-//       await supabase.from("alerts").insert({
-//         user_id: userId,
-//         message: msg,
-//         dismissed: false,
-//       });
-//     }
-//   }
-// }
+  return result;
+}
 
 export async function checkAndInsertAlerts() {
   const supabase = await createClient();
@@ -1061,9 +1143,32 @@ export async function checkAndInsertAlerts() {
     .gte("date", lastMonthStart)
     .lte("date", lastMonthEnd);
 
-  const totalCurrent = currentMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
-  const totalLast = lastMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
+  const months = await getLast3MonthsRangesIncludingCurrent();
 
+  const { data: people1, error: personError1 } = await supabase
+    .from("person")
+    .select("salary, created_at,end_date")
+    .lte("created_at", months[1].endDate)
+    .or(`end_date.gte.${months[1].endDate},end_date.is.null`)
+    .eq("user_id", user.id);
+
+  const { data: people2, error: personError2 } = await supabase
+    .from("person")
+    .select("salary, created_at,end_date")
+    .lte("created_at", months[2].endDate)
+    .or(`end_date.gte.${months[2].endDate},end_date.is.null`)
+    .eq("user_id", user.id);
+
+  const totalCurrentPerson =
+    people2?.reduce((sum, e) => sum + e.salary, 0) || 0;
+  const totalCurrentExpense =
+    currentMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
+  const totalCurrent = totalCurrentExpense + totalCurrentPerson;
+
+  const totalLastPerson = people1?.reduce((sum, e) => sum + e.salary, 0) || 0;
+  const totalLastExpense =
+    lastMonth?.reduce((sum, e) => sum + e.amount, 0) || 0;
+  const totalLast = totalLastExpense + totalLastPerson;
   const alertsToInsert: string[] = [];
 
   if (totalLast > 0 && totalCurrent > totalLast * 1.15) {
@@ -1087,7 +1192,8 @@ export async function checkAndInsertAlerts() {
 
   const { data: persons } = await supabase
     .from("person")
-    .select("id, name")
+    .select("id, name,is_active")
+    .eq("is_active", true)
     .eq("user_id", userId);
 
   const personNames = new Set(persons?.map((p) => p.name) || []);

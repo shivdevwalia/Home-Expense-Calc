@@ -1,20 +1,23 @@
+
+
+// //session************************************************************************
 // "use client";
 
 // import {
 //   Box,
-//   Button,
 //   Text,
 //   VStack,
 //   HStack,
 //   IconButton,
-//   Collapse,
+//   AlertIcon,
+//   AlertDescription,
+//   CloseButton,
+//   Alert,
+//   AlertTitle,
 // } from "@chakra-ui/react";
 // import { useEffect, useState } from "react";
 // import { CloseIcon } from "@chakra-ui/icons";
-// import {
-//   dismissAlertClient,
-//   getAlertsClient,
-// } from "../lib/supabase/data.client";
+// import { getAlertsClient } from "../lib/supabase/data.client";
 
 // export default function AlertDropdown() {
 //   const [alerts, setAlerts] = useState<{ id: string; message: string }[]>([]);
@@ -22,38 +25,62 @@
 //   useEffect(() => {
 //     const fetchAlerts = async () => {
 //       const res = await getAlertsClient();
-//       setAlerts(res || []);
+//       if (!res) return;
+
+//       // Get dismissed alerts from sessionStorage
+//       const dismissed = JSON.parse(
+//         sessionStorage.getItem("dismissed-alerts") || "[]"
+//       );
+
+//       // Filter out dismissed alerts
+//       const filtered = res.filter((alert) => !dismissed.includes(alert.id));
+//       setAlerts(filtered);
 //     };
+
 //     fetchAlerts();
 //   }, []);
 
-//   const dismissAlert = async (id: string) => {
-//     await dismissAlertClient(id);
+//   const dismissAlert = (id: string) => {
+//     // Mark alert as dismissed in sessionStorage
+//     const dismissed = JSON.parse(
+//       sessionStorage.getItem("dismissed-alerts") || "[]"
+//     );
+//     sessionStorage.setItem(
+//       "dismissed-alerts",
+//       JSON.stringify([...dismissed, id])
+//     );
+
+//     // Update UI
 //     setAlerts((prev) => prev.filter((a) => a.id !== id));
 //   };
 
 //   if (alerts.length === 0) return null;
 
 //   return (
-//     <Box bg="red.50" borderRadius="lg" p={4} mb={4} boxShadow="sm">
-//       <VStack align="start" spacing={3}>
+//     <Box px={4} mt={4}>
+//       <VStack spacing={3} align="stretch">
 //         {alerts.map((alert) => (
-//           <HStack key={alert.id} justify="space-between" w="full">
-//             <Text fontSize="sm">{alert.message}</Text>
-//             <IconButton
-//               aria-label="Dismiss alert"
-//               icon={<CloseIcon />}
-//               size="xs"
+//           <Alert key={alert.id} status="error" borderRadius="md">
+//             <AlertIcon />
+//             <AlertTitle fontSize="sm" flex="1" color="red.800">
+//               {alert.message}
+//             </AlertTitle>
+//             <CloseButton
 //               onClick={() => dismissAlert(alert.id)}
+//               position="relative"
+//               right={-1}
+//               top={-1}
 //             />
-//           </HStack>
+//           </Alert>
 //         ))}
 //       </VStack>
 //     </Box>
 //   );
 // }
 
-//session************************************************************************
+
+
+
 "use client";
 
 import {
@@ -70,7 +97,10 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { CloseIcon } from "@chakra-ui/icons";
-import { getAlertsClient } from "../lib/supabase/data.client";
+import { 
+  getAlertsClient, 
+  dismissAlertClient 
+} from "../lib/supabase/data.client";
 
 export default function AlertDropdown() {
   const [alerts, setAlerts] = useState<{ id: string; message: string }[]>([]);
@@ -79,32 +109,24 @@ export default function AlertDropdown() {
     const fetchAlerts = async () => {
       const res = await getAlertsClient();
       if (!res) return;
-
-      // Get dismissed alerts from sessionStorage
-      const dismissed = JSON.parse(
-        sessionStorage.getItem("dismissed-alerts") || "[]"
-      );
-
-      // Filter out dismissed alerts
-      const filtered = res.filter((alert) => !dismissed.includes(alert.id));
-      setAlerts(filtered);
+      
+      // Only show non-dismissed alerts from database
+      setAlerts(res);
     };
 
     fetchAlerts();
   }, []);
 
-  const dismissAlert = (id: string) => {
-    // Mark alert as dismissed in sessionStorage
-    const dismissed = JSON.parse(
-      sessionStorage.getItem("dismissed-alerts") || "[]"
-    );
-    sessionStorage.setItem(
-      "dismissed-alerts",
-      JSON.stringify([...dismissed, id])
-    );
-
-    // Update UI
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  const dismissAlert = async (id: string) => {
+    try {
+      // Update database to mark as dismissed
+      await dismissAlertClient(id);
+      
+      // Update UI immediately
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+    } catch (error) {
+      console.error("Failed to dismiss alert:", error);
+    }
   };
 
   if (alerts.length === 0) return null;

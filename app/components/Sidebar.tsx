@@ -320,15 +320,16 @@ import {
   Wallet,
   Menu,
   BarChart3,
+  LucideUser,
 } from "lucide-react";
-import { FaUser } from "react-icons/fa";
+import { FaHandsHelping, FaUser } from "react-icons/fa";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase/client";
 
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard },
-  { label: "Absence Tracker", icon: UserX },
+  { label: "Househelp", icon: LucideUser  },
   { label: "Manage Expenses", icon: Wallet },
   { label: "Reports", icon: BarChart3 },
   { label: "Logout", icon: LogOut },
@@ -347,7 +348,7 @@ export default function Sidebar() {
 
   const currentActive = (() => {
     if (pathname === "/dashboard") return "Dashboard";
-    if (pathname.includes("/dashboard/absence")) return "Absence Tracker";
+    if (pathname.includes("/dashboard/overview")) return "Househelp";
     if (pathname.includes("/dashboard/expenses")) return "Manage Expenses";
     if (pathname.includes("/dashboard/reports")) return "Reports";
     return "";
@@ -494,8 +495,8 @@ export default function Sidebar() {
       router.push(
         label === "Dashboard"
           ? "/dashboard"
-          : label === "Absence Tracker"
-          ? "/dashboard/absence-tracker"
+          : label === "Househelp"
+          ? "/dashboard/overview"
           : label === "Manage Expenses"
           ? "/dashboard/expenses"
           : label === "Reports"

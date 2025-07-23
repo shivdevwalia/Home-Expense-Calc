@@ -1,332 +1,3 @@
-
-
-// "use client";
-
-// import {
-//   Box,
-//   Flex,
-//   Heading,
-//   Select,
-//   Spinner,
-//   Text,
-//   useToast,
-// } from "@chakra-ui/react";
-// import {
-//   Chart as ChartJS,
-//   BarElement,
-//   CategoryScale,
-//   LinearScale,
-//   Tooltip,
-//   Legend,
-//   ArcElement,
-// } from "chart.js";
-// import { Bar, Doughnut, Pie } from "react-chartjs-2";
-// import { useEffect, useState } from "react";
-// import {
-//   getAvailableYearsClient,
-//   getExpensesByYearClient,
-//   getExpenseCategoryForMonthYear,
-// } from "@/app/lib/supabase/data.client";
-// import { supabase } from "@/app/lib/supabase/client";
-
-// ChartJS.register(
-//   BarElement,
-//   CategoryScale,
-//   LinearScale,
-//   Tooltip,
-//   Legend,
-//   ArcElement
-// );
-
-// type MonthlyPoint = { label: string; value: number };
-// type CategoryData = { category: string; amount: number };
-
-// export default function Reports() {
-//   const toast = useToast();
-//   const [years, setYears] = useState<number[]>([]);
-//   const [selectedYear, setSelectedYear] = useState<number | null>(null);
-//   const [monthly, setMonthly] = useState<MonthlyPoint[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-//   const [categoryData, setCategoryData] = useState<CategoryData[] | null>(null);
-//   const [loadingPie, setLoadingPie] = useState(false);
-
-//   const fetchYears = async (userId: string) => {
-//     const yrs = await getAvailableYearsClient(userId);
-//     setYears(yrs);
-//     if (yrs.length) setSelectedYear(yrs[yrs.length - 1]);
-//   };
-
-//   const fetchMonthly = async (userId: string, year: number) => {
-//     setLoading(true);
-//     const data = await getExpensesByYearClient(userId, year);
-//     setMonthly(data);
-//     setLoading(false);
-//   };
-
-//   useEffect(() => {
-//     (async () => {
-//       const {
-//         data: { user },
-//         error,
-//       } = await supabase.auth.getUser();
-//       if (error || !user) {
-//         toast({ title: "Auth error", status: "error" });
-//         return;
-//       }
-//       await fetchYears(user.id);
-//     })();
-//   }, []);
-
-//   useEffect(() => {
-//     (async () => {
-//       if (!selectedYear) return;
-//       const {
-//         data: { user },
-//       } = await supabase.auth.getUser();
-//       if (!user) return;
-//       await fetchMonthly(user.id, selectedYear);
-//     })();
-//   }, [selectedYear]);
-
-//   const chartData = {
-//     labels: monthly.map((m) => m.label),
-//     datasets: [
-//       {
-//         label: `Expenses – ${selectedYear ?? ""}`,
-//         data: monthly.map((m) => m.value),
-//         backgroundColor: "rgb(0,112,243)",
-//         borderRadius: 4,
-//         barThickness: 30,
-//       },
-//     ],
-//   };
-
-//   const handleBarClick = async (event: any, elements: any[]) => {
-//     if (!elements.length || !selectedYear) return;
-//     const index = elements[0].index;
-//     const monthLabel = chartData.labels[index];
-//     const monthMap: Record<string, number> = {
-//       Jan: 1,
-//       Feb: 2,
-//       Mar: 3,
-//       Apr: 4,
-//       May: 5,
-//       Jun: 6,
-//       Jul: 7,
-//       Aug: 8,
-//       Sep: 9,
-//       Oct: 10,
-//       Nov: 11,
-//       Dec: 12,
-//     };
-//     const monthNum = monthMap[monthLabel.slice(0, 3)] || index + 1;
-
-//     setSelectedMonth(monthNum);
-//     setLoadingPie(true);
-//     const categoryResult = await getExpenseCategoryForMonthYear(
-//       monthNum,
-//       selectedYear
-//     );
-//     setCategoryData(categoryResult);
-//     setLoadingPie(false);
-//   };
-
-//   const pieData = {
-//     labels: categoryData?.map((c) => c.category) || [],
-//     datasets: [
-//       {
-//         label: "Category Breakdown",
-//         data: categoryData?.map((c) => c.amount) || [],
-//         backgroundColor: [
-//           "#0070f3",
-//           "#facc15",
-//           "#ef4444",
-//           "#10b981",
-//           "#8b5cf6",
-//           "#f97316",
-//         ],
-//         borderWidth: 1,
-//       },
-//     ],
-//   };
-
-//   return (
-//     <Box>
-//       <Box bg="white" p={6} borderRadius="md" boxShadow="md">
-//         <Flex
-//           justify="space-between"
-//           align="center"
-//           flexWrap="wrap"
-//           gap={4}
-//           mb={4}
-//         >
-//           <Heading size="md">Monthly Expenses Report</Heading>
-//           <Select
-//             w="120px"
-//             value={selectedYear ?? ""}
-//             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-//           >
-//             {years.map((y) => (
-//               <option key={y} value={y}>
-//                 {y}
-//               </option>
-//             ))}
-//           </Select>
-//         </Flex>
-
-//         {loading ? (
-//           <Flex justify="center" py={16}>
-//             <Spinner size="lg" />
-//           </Flex>
-//         ) : (
-//           <Box h="400px" position="relative">
-//             <Bar
-//               data={chartData}
-//               options={{
-//                 responsive: true,
-//                 maintainAspectRatio: false,
-//                 onClick: handleBarClick,
-//                 plugins: {
-//                   legend: { display: false },
-//                 },
-//                 scales: {
-//                   y: {
-//                     beginAtZero: true,
-//                     ticks: { precision: 0 },
-//                   },
-//                 },
-//               }}
-//             />
-//           </Box>
-//         )}
-//       </Box>
-
-//       {selectedMonth && categoryData && (
-//         <Box mt={8}>
-//           <Flex
-//             gap={6}
-//             align="flex-start"
-//             minH="400px"
-//             flexWrap="wrap"
-//             direction={{ base: "column", lg: "row" }}
-//           >
-//             <Box
-//               bg="white"
-//               borderRadius="lg"
-//               boxShadow="md"
-//               p={{ base: 4, md: 6 }}
-//               w={{ base: "100%", lg: "450px" }}
-//               flexShrink={0}
-//             >
-//               {/* Header + Close button */}
-//               <Flex justify="space-between" align="center" mb={4}>
-//                 <Heading fontSize={{ base: "lg", md: "xl" }} fontWeight="bold">
-//                   {new Date(selectedYear!, selectedMonth - 1).toLocaleString(
-//                     "default",
-//                     { month: "long" }
-//                   )}{" "}
-//                   {selectedYear} Expenses by Category
-//                 </Heading>
-//                 <Box
-//                   as="button"
-//                   onClick={() => {
-//                     setSelectedMonth(null);
-//                     setCategoryData(null);
-//                   }}
-//                   p={1}
-//                   borderRadius="full"
-//                   _hover={{ bg: "gray.100" }}
-//                   cursor="pointer"
-//                 >
-//                   <Text fontSize="lg" color="gray.500">
-//                     ✕
-//                   </Text>
-//                 </Box>
-//               </Flex>
-
-//               {loadingPie ? (
-//                 <Flex justify="center" py={8}>
-//                   <Spinner />
-//                 </Flex>
-//               ) : (
-//                 <Box position="relative" display="flex" justifyContent="center">
-//                   <Box
-//                     w={{ base: "280px", md: "300px" }}
-//                     h={{ base: "250px", md: "270px" }}
-//                   >
-//                     <Doughnut
-//                       data={pieData}
-//                       options={{
-//                         responsive: true,
-//                         cutout: "70%",
-//                         plugins: {
-//                           legend: { display: false },
-//                         },
-//                       }}
-//                     />
-//                   </Box>
-
-//                   {/* Center Total in donut */}
-//                   <Box
-//                     position="absolute"
-//                     top="50%"
-//                     left="50%"
-//                     transform="translate(-50%, -50%)"
-//                     textAlign="center"
-//                     pointerEvents="none"
-//                   >
-//                     <Box>
-//                       <Box fontSize="sm" color="gray.500">
-//                         Total
-//                       </Box>
-//                       <Box
-//                         fontSize={{ base: "lg", md: "2xl" }}
-//                         fontWeight="bold"
-//                       >
-//                         ₹
-//                         {categoryData
-//                           .reduce((sum, c) => sum + c.amount, 0)
-//                           .toLocaleString()}
-//                       </Box>
-//                     </Box>
-//                   </Box>
-//                 </Box>
-//               )}
-
-//               {/* Category legend */}
-//               <Flex mt={4} wrap="wrap" gap={3}>
-//                 {categoryData.map((item, index) => (
-//                   <Flex
-//                     key={item.category}
-//                     align="center"
-//                     gap={2}
-//                     p={2}
-//                     borderRadius="md"
-//                     bg="gray.50"
-//                     _hover={{ bg: "gray.100" }}
-//                   >
-//                     <Box
-//                       w="12px"
-//                       h="12px"
-//                       bg={pieData.datasets[0].backgroundColor[index]}
-//                       borderRadius="full"
-//                     />
-//                     <Box fontSize="sm" fontWeight="medium">
-//                       {item.category}
-//                     </Box>
-//                   </Flex>
-//                 ))}
-//               </Flex>
-//             </Box>
-//           </Flex>
-//         </Box>
-//       )}
-//     </Box>
-//   );
-// }
-
-
 "use client";
 
 import {
@@ -389,8 +60,9 @@ export default function Reports() {
 
   // ───── sub‑category pie ─────
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [subcategoryData, setSubcategoryData] =
-    useState<SubcategoryData[] | null>(null);
+  const [subcategoryData, setSubcategoryData] = useState<
+    SubcategoryData[] | null
+  >(null);
   const [loadingSubPie, setLoadingSubPie] = useState(false);
 
   // ────────────────────────────────────────────
@@ -519,12 +191,7 @@ export default function Reports() {
   };
 
   const handleCategorySliceClick = async (_: any, elements: any[]) => {
-    if (
-      !elements.length ||
-      !categoryData ||
-      !selectedMonth ||
-      !selectedYear
-    ) {
+    if (!elements.length || !categoryData || !selectedMonth || !selectedYear) {
       return;
     }
 
@@ -619,10 +286,10 @@ export default function Reports() {
               {/* header */}
               <Flex justify="space-between" align="center" mb={4}>
                 <Heading fontSize={{ base: "lg", md: "xl" }} fontWeight="bold">
-                  {new Date(
-                    selectedYear!,
-                    selectedMonth - 1
-                  ).toLocaleString("default", { month: "long" })}{" "}
+                  {new Date(selectedYear!, selectedMonth - 1).toLocaleString(
+                    "default",
+                    { month: "long" }
+                  )}{" "}
                   {selectedYear} Expenses by Category
                 </Heading>
                 <Box
@@ -670,14 +337,17 @@ export default function Reports() {
                     position="absolute"
                     top="50%"
                     left="50%"
-                    transform="translate(-50%, -50%)"
+                    transform="translate(-65%, -50%)"
                     textAlign="center"
                     pointerEvents="none"
                   >
                     <Text fontSize="sm" color="gray.500">
                       Total
                     </Text>
-                    <Text fontSize={{ base: "lg", md: "2xl" }} fontWeight="bold">
+                    <Text
+                      fontSize={{ base: "lg", md: "2xl" }}
+                      fontWeight="bold"
+                    >
                       ₹
                       {categoryData
                         .reduce((s, c) => s + c.amount, 0)
@@ -774,7 +444,7 @@ export default function Reports() {
                       position="absolute"
                       top="50%"
                       left="50%"
-                      transform="translate(-50%, -50%)"
+                      transform="translate(-65%, -50%)"
                       textAlign="center"
                       pointerEvents="none"
                     >
@@ -809,9 +479,7 @@ export default function Reports() {
                       <Box
                         w="12px"
                         h="12px"
-                        bg={
-                          subPieData.datasets[0].backgroundColor[i] as string
-                        }
+                        bg={subPieData.datasets[0].backgroundColor[i] as string}
                         borderRadius="full"
                       />
                       <Text fontSize="sm">{s.subcategory}</Text>
