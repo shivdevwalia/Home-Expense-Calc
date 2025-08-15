@@ -96,20 +96,21 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, it features **Google Sh
 
 ### 🏠 Main Dashboard  
 Landing page showing expense summary, alerts, and quick stats.  
-![Dashboard](./dashboard.png.png)
+![Dashboard]<img width="2546" height="1263" alt="dashboard png" src="https://github.com/user-attachments/assets/285fe040-ad9b-49cb-b84b-3f99c3832bba" />
+
 
 ---
 
 ### 📊 Category & Subcategory View  
 Breakdown of expenses by category and subcategory.  
-![Category & Subcategory](<img width="2546" height="1263" alt="dashboard png" src="https://github.com/user-attachments/assets/282323f9-3a7f-4116-a72b-6223cf8312bc" />
+![Category & Subcategory]<img width="2546" height="1263" alt="dashboard png" src="https://github.com/user-attachments/assets/282323f9-3a7f-4116-a72b-6223cf8312bc" />
 )
 
 ---
 
 ### 📅 Absences (Last 6 Months)  
 Absence tracking for each household help member over the last six months.  
-![Absences 6 Months](<img width="1986" height="1072" alt="absencechart png" src="https://github.com/user-attachments/assets/4f63df3b-c59e-4b22-902e-66f385bb9c15" />)
+![Absences 6 Months]<img width="1986" height="1072" alt="absencechart png" src="https://github.com/user-attachments/assets/4f63df3b-c59e-4b22-902e-66f385bb9c15" />
 
 
 ---
