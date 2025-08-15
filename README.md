@@ -102,34 +102,40 @@ Landing page showing expense summary, alerts, and quick stats.
 
 ### 📊 Category & Subcategory View  
 Breakdown of expenses by category and subcategory.  
-![Category & Subcategory](./pie.png.png)
+![Category & Subcategory](<img width="2546" height="1263" alt="dashboard png" src="https://github.com/user-attachments/assets/282323f9-3a7f-4116-a72b-6223cf8312bc" />
+)
 
 ---
 
 ### 📅 Absences (Last 6 Months)  
 Absence tracking for each household help member over the last six months.  
-![Absences 6 Months](./absencechart.png.png)
+![Absences 6 Months](<img width="1986" height="1072" alt="absencechart png" src="https://github.com/user-attachments/assets/4f63df3b-c59e-4b22-902e-66f385bb9c15" />)
+
 
 ---
 
 ### 👥 Household Help Overview  
 List of all household help with quick info and actions.  
-![Household Help Overview](./overview.png.png)
+![Household Help Overview]<img width="2559" height="1230" alt="overview png" src="https://github.com/user-attachments/assets/871eb012-9daa-49cd-ab4c-0797d43ca457" />
+
 
 ---
 
 ### 🧍 Individual Person Page  
 Detailed view for a single household help member.  
-![Individual Person](./person.png.png)
+![Individual Person]<img width="1989" height="850" alt="person png" src="https://github.com/user-attachments/assets/92333bf4-83bf-4f50-a172-cfbfb10a242f" />
+
 
 ---
 
 ### ➕ Adding Absences  
 Form to add and record absences for household help.  
-![Add Absence](./addabsence.png.png)
+![Add Absence]<img width="1961" height="928" alt="addabsence png" src="https://github.com/user-attachments/assets/4ba0cc31-9f4d-4c93-80dd-e2b53437606a" />
+
 
 ---
 
 ### 💰 Salary View  
 Monthly salary details and payment tracking for household help.  
-![Salary View](./salary.png.png)
+![Salary View]<img width="1902" height="1024" alt="salary png" src="https://github.com/user-attachments/assets/58d018f0-986b-4dc5-a050-36d1af46c828" />
+
