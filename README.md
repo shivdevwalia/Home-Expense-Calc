@@ -103,7 +103,8 @@ Landing page showing expense summary, alerts, and quick stats.
 
 ### 📊 Category & Subcategory View  
 Breakdown of expenses by category and subcategory.  
-![Category & Subcategory]<img width="2546" height="1263" alt="dashboard png" src="https://github.com/user-attachments/assets/282323f9-3a7f-4116-a72b-6223cf8312bc" />
+![Category & Subcategory]<img width="1930" height="933" alt="pie png" src="https://github.com/user-attachments/assets/17bc3bff-36f0-45d6-a6f4-66808ab165dc" />
+
 )
 
 ---
