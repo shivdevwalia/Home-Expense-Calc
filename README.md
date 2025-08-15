@@ -162,3 +162,11 @@ List of unpaid household help salaries and utility bills with payment status.
 ![Overdue Payments]<img width="2037" height="1118" alt="Screenshot 2025-08-15 172204" src="https://github.com/user-attachments/assets/964d1182-3ddb-4190-bfb8-4aeea32fac6a" />
 
 
+---
+
+### 🔐 Sign-In Page  
+Login with email/password or Google account.  
+![Sign In]<img width="1089" height="1085" alt="Screenshot 2025-08-15 172552" src="https://github.com/user-attachments/assets/4216b0a3-5f89-44ca-9d3b-21e57d77d7be" />
+
+
+
