@@ -91,46 +91,45 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, it features **Google Sh
   - “Who has the most absences this year?”
 - Returns **personalized insights** instantly
 
---## 📸 Screenshots
+
+## 📸 Screenshots
 
 ### 🏠 Main Dashboard  
 Landing page showing expense summary, alerts, and quick stats.  
-![Dashboard](dashboard.png.png)
+![Dashboard](./dashboard.png.png)
 
 ---
 
 ### 📊 Category & Subcategory View  
 Breakdown of expenses by category and subcategory.  
-![Category & Subcategory](pie.png.png)
+![Category & Subcategory](./pie.png.png)
 
 ---
 
 ### 📅 Absences (Last 6 Months)  
 Absence tracking for each household help member over the last six months.  
-![Absences 6 Months](absencechart.png.png)
+![Absences 6 Months](./absencechart.png.png)
 
 ---
 
 ### 👥 Household Help Overview  
 List of all household help with quick info and actions.  
-![Household Help Overview](overview.png.png)
+![Household Help Overview](./overview.png.png)
 
 ---
 
 ### 🧍 Individual Person Page  
 Detailed view for a single household help member.  
-![Individual Person](person.png.png)
+![Individual Person](./person.png.png)
 
 ---
 
 ### ➕ Adding Absences  
 Form to add and record absences for household help.  
-![Add Absence](addabsence.png.png)
+![Add Absence](./addabsence.png.png)
 
 ---
 
 ### 💰 Salary View  
 Monthly salary details and payment tracking for household help.  
-![Salary View](salary.png.png)
-
-
+![Salary View](./salary.png.png)
