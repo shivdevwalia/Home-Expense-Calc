@@ -96,7 +96,7 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, it features **Google Sh
 
 ### 🏠 Main Dashboard  
 Landing page showing expense summary, alerts, and quick stats.  
-![Dashboard](https://github.com/user-attachments/assets/452b27b4-c9e6-4403-a899-0ce6a28dc8b7.png)
+![Dashboard](dashboard.png.png)
 
 ---
 
