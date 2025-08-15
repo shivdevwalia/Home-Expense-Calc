@@ -92,5 +92,40 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, it features **Google Sh
 - Returns **personalized insights** instantly
 
 ---
+## 📸 Screenshots
+
+### 🏠 Main Dashboard  
+Landing page showing expense summary, alerts, and quick stats.  
+![Dashboard](https://github.com/user-attachments/assets/452b27b4-c9e6-4403-a899-0ce6a28dc8b7.png)
+
+---
+
+### 📊 Category & Subcategory View  
+Breakdown of expenses by category and subcategory.  
+![Category & Subcategory](https://github.com/user-attachments/assets/c5eccd07-9e41-4d49-a7e4-d0c0d5380527.png)
+
+---
+
+### 📅 Absences (Last 6 Months)  
+Absence tracking for each household help member over the last six months.  
+![Absences 6 Months](https://github.com/user-attachments/assets/c0cd8109-fda9-46c1-a9f6-79dd1aecb7bb.png)
+
+---
+
+### 👥 Household Help Overview  
+List of all household help with quick info and actions.  
+![Household Help Overview](https://github.com/user-attachments/assets/cb4418b9-4df6-469b-b720-077ff498e5f8.png)
+
+---
+
+### 🧍 Individual Person Page  
+Detailed view for a single household help member.  
+![Individual Person](https://github.com/user-attachments/assets/ca3cef49-2512-4e06-ba91-763d0658b2f3.png)
+
+---
+
+### ➕ Adding Absences  
+Form to add and record absences for household help.  
+![Add Absence](https://github.com/user-attachments/assets/1b44c64e-b588-4fea-af82-e61ea9d190af.png)
 
 
