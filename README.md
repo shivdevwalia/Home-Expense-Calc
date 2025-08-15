@@ -141,3 +141,24 @@ Form to add and record absences for household help.
 Monthly salary details and payment tracking for household help.  
 ![Salary View]<img width="1902" height="1024" alt="salary png" src="https://github.com/user-attachments/assets/58d018f0-986b-4dc5-a050-36d1af46c828" />
 
+
+
+### 📝 Add Expenses Form  
+Form to add new expenses with category, subcategory, and amount.  
+![Add Expenses]<img width="1402" height="778" alt="Screenshot 2025-08-15 172052" src="https://github.com/user-attachments/assets/9434df6d-80e9-40a9-bbce-89c8b70789f8" />
+
+
+---
+
+### 📆 Monthly Expense Breakdown  
+Chart showing monthly expenses per category for a selected year.  
+![Monthly Expense Breakdown]<img width="1975" height="798" alt="Screenshot 2025-08-15 172136" src="https://github.com/user-attachments/assets/fff86073-67f0-421d-9be4-73143a802ddc" />
+
+
+---
+
+### 🚨 Overdue Payments  
+List of unpaid household help salaries and utility bills with payment status.  
+![Overdue Payments]<img width="2037" height="1118" alt="Screenshot 2025-08-15 172204" src="https://github.com/user-attachments/assets/964d1182-3ddb-4190-bfb8-4aeea32fac6a" />
+
+
