@@ -3,7 +3,7 @@
 A full-stack expense tracking platform designed for Indian households.  
 It helps you manage **monthly expenses**, **household help salaries**, **advances**, **absences**, **overdue payments**, and **detailed reports** — all in one place.  
 
-Built with **Next.js**, **Supabase**, and **Chakra UI**, it features **Google Sheets sync**, **real-time alerts**, **interactive charts**, and a **Chatling AI assistant** that can answer questions about the web app in natural language.  
+Built with **Next.js**, **Supabase**, and **Chakra UI**, **real-time alerts**, **interactive charts**, and a **Chatling AI assistant** that can answer questions about the web app in natural language.  
 
 ---
 
