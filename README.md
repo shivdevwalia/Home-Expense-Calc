@@ -85,11 +85,10 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, **real-time alerts**, *
 - Manages salary, absences, and advances in one place
 
 ### 🤖 Chatling AI Assistant
-- Connected to synced Google Sheets data
 - Users can ask:
-  - “How much did I spend on electricity last month?”
-  - “Who has the most absences this year?”
-- Returns **personalized insights** instantly
+  - “Where can I see my monthly expenses?”
+  - “How do I add a new household help?”
+- Returns instant guidance on website features, navigation, and functionality.
 
 
 ## 📸 Screenshots
