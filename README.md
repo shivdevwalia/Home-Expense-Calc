@@ -9,8 +9,8 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, **real-time alerts**, *
 
 ## 🌐 Live Demo
 
-🔗 [Frontend (Next.js)](https://your-expense-tracker.vercel.app/)  
-🔗 [Backend (Supabase)](https://supabase.com)  
+🔗 [hxcal.com (Next.js)](https://www.hxcal.com/)  
+
 
 ---
 
