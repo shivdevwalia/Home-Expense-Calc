@@ -84,11 +84,7 @@ Built with **Next.js**, **Supabase**, and **Chakra UI**, **real-time alerts**, *
 - Lists people under selected role in a styled format
 - Manages salary, absences, and advances in one place
 
-### 🤖 Chatling AI Assistant
-- Users can ask:
-  - “Where can I see my monthly expenses?”
-  - “How do I add a new household help?”
-- Returns instant guidance on website features, navigation, and functionality.
+
 
 
 ## 📸 Screenshots
